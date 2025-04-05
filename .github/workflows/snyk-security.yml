@@ -16,20 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Setup Node.js environment if scanning Node projects (uncomment if needed)
+      # Setup Node.js environment (uncomment if needed)
       # - uses: actions/setup-node@v4
       #   with:
       #     node-version: 20
 
       - name: Setup Snyk CLI
-        uses: snyk/actions/setup@v3
+        uses: snyk/actions/setup@v3.0.0  # Using exact version
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       # Snyk Code SAST Analysis
       - name: Run Snyk Code Scan
         run: snyk code test --sarif-file-output=snyk-code.sarif
-        continue-on-error: true  # Prevents job failure when vulnerabilities found
+        continue-on-error: true
 
       # Snyk Open Source SCA Analysis
       - name: Run Snyk Open Source Scan
@@ -41,17 +41,7 @@ jobs:
         run: snyk iac test --sarif-file-output=snyk-iac.sarif
         continue-on-error: true
 
-      # Snyk Container Analysis (if using Docker)
-      - name: Build Docker image
-        if: false  # Disabled by default - set to 'true' if using containers
-        run: docker build -t your/image-to-test .
-
-      - name: Run Snyk Container Scan
-        if: false  # Disabled by default - set to 'true' if using containers
-        run: snyk container test your/image-to-test --sarif-file-output=snyk-container.sarif
-        continue-on-error: true
-
-      # Upload all SARIF results to GitHub Security
+      # Upload all SARIF results
       - name: Upload Security Scan Results
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -59,4 +49,3 @@ jobs:
             snyk-code.sarif
             snyk-os.sarif
             snyk-iac.sarif
-            snyk-container.sarif
